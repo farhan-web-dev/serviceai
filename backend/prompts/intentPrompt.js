@@ -13,7 +13,9 @@ You MUST return ONLY a valid JSON object matching this schema:
 {
   "serviceType": "string",
   "location": "string",
-  "requestedTime": "string"
+  "requestedTime": "string",
+  "confidenceScore": "number (0-100 based on how clearly the user expressed their intent)",
+  "confidenceReasoning": "string (brief explanation of the score)"
 }
 
 User Request: "{query}"

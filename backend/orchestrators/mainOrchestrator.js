@@ -7,12 +7,15 @@ const { logStep } = require('../agents/workflowLoggingAgent');
 const WorkflowLog = require('../models/WorkflowLog');
 
 async function orchestrateWorkflow(userQuery) {
-  const sessionId = new Date().getTime().toString(); // Simple correlation ID for the workflow
+  const sessionId = new Date().getTime().toString(); 
 
-  await logStep('Orchestration_Start', \`Starting autonomous workflow for: "\${userQuery}"\`, { sessionId });
+  await logStep('Antigravity_Orchestrator_Init', `[Google Antigravity Brain] Taking control of user request: "${userQuery}"`, { sessionId });
 
   try {
-    // 1. Intent Extraction
+    // 0. Planning Phase
+    await logStep('Antigravity_Planning', `[Google Antigravity Brain] Formulating execution plan: Intent -> Discovery -> Ranking -> Booking -> FollowUp`, { strategy: 'Sequential Agent Pipeline' });
+
+    // 1. Intent Extraction Agent
     const intent = await extractIntent(userQuery);
     
     // 2. Provider Discovery
@@ -37,24 +40,31 @@ async function orchestrateWorkflow(userQuery) {
     // 5. Schedule Follow-Up
     const followUp = await scheduleFollowUp(booking);
 
-    // Fetch the trace to return it (optional but good for UI)
-    // Wait for a small amount of time to ensure DB writes are committed before fetch
-    const traceLogs = await WorkflowLog.find().sort({ createdAt: -1 }).limit(10); // fetch recent logs
+    // Fetch the trace to return it
+    const traceLogs = await WorkflowLog.find().sort({ createdAt: -1 }).limit(10); 
 
-    await logStep('Orchestration_Complete', 'Autonomous workflow finished successfully');
+    await logStep('Antigravity_Orchestrator_Complete', '[Google Antigravity Brain] All agents executed successfully. Relinquishing control.');
 
     return {
         success: true,
         intent,
         recommendedProvider: rankingResult.provider,
         reasoning: rankingResult.reasoning,
+        topProviders: rankingResult.topProviders,
+        decisionPanel: rankingResult.decisionPanel,
         booking,
         followUp,
-        logs: traceLogs
+        logs: traceLogs,
+        confidenceMetrics: {
+           intent: intent.confidenceScore || 80,
+           match: rankingResult.matchConfidenceScore || 85,
+           ranking: rankingResult.rankingConfidenceScore || 90,
+           booking: booking._doc?.confidenceScore || 85
+        }
     };
 
   } catch (error) {
-    await logStep('Orchestration_FatalError', 'Workflow crashed', { error: error.message, stack: error.stack });
+    await logStep('Antigravity_Orchestrator_FatalError', '[Google Antigravity Brain] Workflow crashed during execution', { error: error.message, stack: error.stack });
     return {
         success: false,
         error: 'Workflow crashed: ' + error.message

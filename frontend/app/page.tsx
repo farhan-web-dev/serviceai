@@ -17,7 +17,8 @@ export default function Home() {
     
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/intent", {
+      // Call the autonomous orchestration workflow
+      const response = await fetch("http://localhost:5000/api/orchestrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: message }),
@@ -25,16 +26,11 @@ export default function Home() {
       
       const data = await response.json();
       
-      // Navigate to understanding screen with data
-      const queryParams = new URLSearchParams({
-        serviceType: data.serviceType,
-        location: data.location,
-        requestedTime: data.requestedTime
-      }).toString();
-      
-      router.push(`/understanding?${queryParams}`);
+      // Save the result to session storage and navigate to the orchestration trace page
+      sessionStorage.setItem('orchestrationResult', JSON.stringify(data));
+      router.push(`/orchestration`);
     } catch (error) {
-      console.error("Failed to parse intent:", error);
+      console.error("Failed to execute autonomous workflow:", error);
     } finally {
       setLoading(false);
     }

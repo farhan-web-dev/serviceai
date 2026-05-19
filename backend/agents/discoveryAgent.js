@@ -4,7 +4,7 @@ const { logStep } = require('./workflowLoggingAgent');
 
 async function discoverProviders(intent) {
   const { serviceType, location } = intent;
-  await logStep('ProviderDiscovery_Start', \`Discovering providers for service: \${serviceType} at \${location}\`, intent);
+  await logStep('ProviderDiscovery_Start', `Discovering providers for service: ${serviceType} at ${location}`, intent);
 
   try {
     let query = {};
@@ -31,11 +31,13 @@ async function discoverProviders(intent) {
         price: p.price,
         providerLocation: p.location,
         distanceText: distanceInfo.distanceText,
-        distanceValue: distanceInfo.distanceValue
+        distanceValue: distanceInfo.distanceValue,
+        availability: p.availability,
+        avatar: p.avatar
       });
     }
 
-    await logStep('ProviderDiscovery_Success', \`Discovered \${enrichedProviders.length} potential providers\`, { count: enrichedProviders.length });
+    await logStep('ProviderDiscovery_Success', `Discovered ${enrichedProviders.length} potential providers`, { count: enrichedProviders.length });
     return enrichedProviders;
   } catch (error) {
     await logStep('ProviderDiscovery_Error', 'Failed to discover providers', { error: error.message });

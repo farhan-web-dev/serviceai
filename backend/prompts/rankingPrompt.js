@@ -1,25 +1,30 @@
 const rankingPromptTemplate = `
-You are an expert AI ranking agent. Your task is to evaluate a list of available service providers and select the single best provider for the user's request.
+You are an expert AI ranking agent. Your task is to evaluate a list of scored service providers, select the best one, and provide transparent reasoning.
 
 Here is the context:
 Service Requested: {serviceType}
 Location: {location}
 Time: {requestedTime}
 
-Available Providers (JSON):
+Top Providers with Calculated Scores (JSON):
 {providersJSON}
 
-Ranking Criteria:
-1. Match the exact service category.
-2. High ratings are preferred.
-3. Proximity: If we have an estimated distance, closer is better. (If distance is missing, prioritize rating).
-4. Availability: They must be able to do the job.
-
-Select the BEST provider from the list.
-You MUST return ONLY a valid JSON object matching this schema:
+You MUST return ONLY a valid JSON object matching this exact schema:
 {
-  "selectedProviderId": "string (the _id of the best provider)",
-  "reasoning": "string (a clear, brief explanation for the user about WHY this provider was chosen over others)"
+  "comparisonReasoning": "string (e.g. 'Provider A was selected because it balances shortest distance and highest availability compared to the others')",
+  "matchConfidenceScore": "number (0-100 evaluating how well the top providers match the user's intent)",
+  "rankingConfidenceScore": "number (0-100 evaluating how confident you are that the #1 choice is significantly better than the rest)",
+  "selectedProviderReason": "string (Format: 'closest + highest rating + available' or similar)",
+  "rejectedProvidersReasons": [
+    {
+      "name": "string (Provider Name)",
+      "reason": "string (Format: 'lower rating / farther distance / unavailable' or similar)"
+    }
+  ],
+  "explanations": {
+    "provider_id_here": "string (1 sentence on why this specific provider ranked where they did)",
+    "another_provider_id_here": "string"
+  }
 }
 `;
 

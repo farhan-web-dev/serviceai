@@ -3,7 +3,7 @@ const { intentPromptTemplate } = require('../prompts/intentPrompt');
 const { logStep } = require('./workflowLoggingAgent');
 
 async function extractIntent(userQuery) {
-  await logStep('IntentExtraction_Start', \`Analyzing user query: "\${userQuery}"\`, { query: userQuery });
+  await logStep('IntentExtraction_Start', `Analyzing user query: "${userQuery}"`, { query: userQuery });
   
   const prompt = intentPromptTemplate.replace('{query}', userQuery);
   

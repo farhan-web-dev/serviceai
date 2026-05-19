@@ -23,7 +23,7 @@ const { discoverProviders } = require('./agents/discoveryAgent');
 const { createBooking } = require('./agents/bookingAgent');
 const { orchestrateWorkflow } = require('./orchestrators/mainOrchestrator');
 
-// 0. NEW: Autonomous Orchestrator Route
+// 0. Google Antigravity Orchestrator Route (Core Brain)
 app.post('/api/orchestrate', async (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: 'Text query is required' });
@@ -82,6 +82,21 @@ app.post('/api/bookings', async (req, res) => {
   }
 });
 
+// 3.5. Get Single Booking (for live tracking)
+app.get('/api/bookings/:id', async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    
+    // Fetch logs specifically related to this booking ID
+    const logs = await WorkflowLog.find({ 'metadata.bookingId': req.params.id }).sort({ createdAt: 1 });
+    
+    res.json({ booking, logs });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch booking' });
+  }
+});
+
 // 4. Logs Route
 app.get('/api/logs', async (req, res) => {
   try {
@@ -94,6 +109,6 @@ app.get('/api/logs', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(\`Server running on port \${PORT}\`);
+  console.log(`Server running on port ${PORT}`);
 });
 

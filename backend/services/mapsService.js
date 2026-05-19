@@ -14,7 +14,7 @@ async function estimateDistance(origin, destination) {
   }
 
   try {
-    const url = \`https://maps.googleapis.com/maps/api/distancematrix/json?origins=\${encodeURIComponent(origin)}&destinations=\${encodeURIComponent(destination)}&key=\${apiKey}\`;
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
     const response = await axios.get(url);
     
     if (response.data.status === 'OK' && response.data.rows[0].elements[0].status === 'OK') {
