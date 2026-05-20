@@ -11,9 +11,39 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Failed to connect to MongoDB', err));
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
+async function connectDB() {
+  if (process.env.MONGODB_URI) {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to MongoDB');
+  } else {
+    const mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+    await mongoose.connect(uri);
+    console.log('Connected to in-memory MongoDB at', uri);
+    
+    // Auto-seed if memory server is used
+    try {
+      const Provider = require('./models/Provider');
+      const count = await Provider.countDocuments();
+      if (count === 0) {
+        console.log('Seeding initial providers...');
+        const providers = [
+          { name: 'Ali Raza', avatar: 'https://i.pravatar.cc/150?u=ali', category: 'AC Technician', location: 'G-13, Islamabad', rating: 4.8, price: 1500, availability: true, distance: '2 km' },
+          { name: 'Sana Beautician', avatar: 'https://i.pravatar.cc/150?u=sana', category: 'Beautician', location: 'G-13, Islamabad', rating: 4.9, price: 3000, availability: true, distance: '1.5 km' },
+          { name: 'Bilal Sparks', avatar: 'https://i.pravatar.cc/150?u=bilal', category: 'Electrician', location: 'G-13, Islamabad', rating: 4.8, price: 1200, availability: true, distance: '2 km' },
+          { name: 'Rizwan Pipes', avatar: 'https://i.pravatar.cc/150?u=rizwan', category: 'Plumber', location: 'G-13, Islamabad', rating: 4.1, price: 600, availability: true, distance: '1 km' }
+        ];
+        await Provider.insertMany(providers);
+        console.log('Seeded providers.');
+      }
+    } catch (err) {
+      console.error('Failed to seed:', err);
+    }
+  }
+}
+connectDB().catch(err => console.error('Failed to connect to MongoDB', err));
 
 // Helper to log workflows (Keeping the old one for compatibility, but moving to new agent logic)
 const { logStep } = require('./agents/workflowLoggingAgent');
@@ -108,7 +138,7 @@ app.get('/api/logs', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT} (accessible on LAN at 192.168.30.2:${PORT})`);
 });
 
